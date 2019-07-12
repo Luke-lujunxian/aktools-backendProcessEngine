@@ -11,4 +11,4 @@
     )
 `<br>
 返回示例：<br>
-`[['TKT_INST_FIN\n', None], ['TKT_RECRUIT\n', None], ........]`
+`[['TKT_INST_FIN', None], ['TKT_RECRUIT', 1], ........]`<br>
