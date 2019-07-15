@@ -1,0 +1,5 @@
+classes=10
+train=/home/luke/darknet/test2/train.txt
+valid=/home/luke/darknet/test2/val.txt
+names=modelData/resou2.names
+backup=/home/luke/darknet/test2/ckpt
