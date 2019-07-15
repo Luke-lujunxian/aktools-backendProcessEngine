@@ -1,33 +1,31 @@
 import base64
 import os
-import random
 import re
 from io import BytesIO
 
 from PIL import Image
 
-import darknet
-from yolo import YOLO
+from .darknet import *
+from .yolo import YOLO
 
 
-def request(modelPath, anchorsPath, classesPath, image):
+def request_detect(basePath, modelPath, anchorsPath, classesPath, image):
     # parser = init()
     FLAGS = {
-        "model_path": modelPath,
-        "anchors_path": anchorsPath,
-        "classes_path": classesPath,
+        "model_path": basePath+modelPath,
+        "anchors_path": basePath+anchorsPath,
+        "classes_path": basePath+classesPath,
         "score": 0.5,
         "iou": 0.45,
         "model_image_size": (416, 416),
         "gpu_num": 0,
     }
 
-
     # detect_img(YOLO(FLAGS),image,FLAGSnum)
-    print(detect_img(YOLO(FLAGS), image))
+    return detect_img(basePath, YOLO(FLAGS), image)
 
 
-def detect_img(objReg, image):
+def detect_img(basePath, objReg, image):
     resultList = []
     base64_data = re.sub('^data:image/.+;base64,', '', image)
     byte_data = base64.b64decode(base64_data)
@@ -38,10 +36,10 @@ def detect_img(objReg, image):
     # print(out_boxes,out_classes,out_scores)
     # objReg.close_session()
     objReg.close_session()
-    resName = open('itemList.txt').readlines()
+    resName = open(basePath + 'itemList.txt').readlines()
     # print(type(out_classes))
-    net = darknet.load_net(b"modelData/yolov3-tiny.cfg", b"modelData/yolov3-tiny_final.weights", 0)
-    meta = darknet.load_meta(b"modelData/data2.data")
+    net = load_net((basePath + "modelData/yolov3-tiny.cfg").encode(), (basePath + "modelData/yolov3-tiny_final.weights").encode(), 0)
+    meta = load_meta((basePath + "modelData/data2.data")).encode()
     for i in range(out_classes.tolist().__len__()):
         top, left, bottom, right = out_boxes[i]
         size = max(right - left, bottom - top)
@@ -54,10 +52,10 @@ def detect_img(objReg, image):
                 temp = temp.convert('RGB')
                 temp.save('temp/' + filename + '.jpg')
             string = 'temp/' + filename + '.jpg'
-            #temp.show()
+            # temp.show()
             resultList.append(
                 [resName[out_classes[i]].replace('\n', ''),
-                 getNum(darknet.detect(net, meta, bytes(string, encoding='utf8')))])
+                 getNum(detect(net, meta, bytes(string, encoding='utf8')))])
             # temp.show()
             # print(resultList[-1])
         finally:
@@ -76,9 +74,9 @@ FLAGS = None
 
 def getNum(results):
     if results == []:
-        #print("Failed")
+        # print("Failed")
         return
-    #print(results)
+    # print(results)
     out_boxes = []
     out_scores = []
     out_classes = []
@@ -88,7 +86,7 @@ def getNum(results):
         out_boxes.append(result[2])
         out_scores.append(result[1])
         out_classes.append(int(result[0]))
-    #print(out_classes)
+    # print(out_classes)
     out = 0
 
     while out_boxes.__len__() != 0:
